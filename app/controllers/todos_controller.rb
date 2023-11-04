@@ -18,20 +18,28 @@ class TodosController < ApplicationController
 
   def show; end
 
+  # CSVエクスポートアクションをトリガーします。
   def export
+    # TodoExporterサービスを利用してCSVデータを生成し、ファイルダウンロードとして送信します。
     send_data TodoExporter.new(Todo.all).generate_csv, filename: "todos-#{Date.today}.csv"
   end
 
+  # CSVファイルからTodosを読み込むためのインポートアクションをトリガーします。
   def import
+    # ファイルがアップロードされたかどうかを確認します。
     if params[:file].present?
       begin
+        # TodoImporterサービスを利用してCSVデータをインポートします。
         TodoImporter.new(params[:file].path).import_csv
-        redirect_to todos_path, notice: 'Todos imported successfully!'
+        # インポートが成功したら、成功通知とともにインデックスアクションにリダイレクトします。
+        redirect_to todos_path, notice: 'Todosが正常にインポートされました！'
       rescue => e
+        # エラーが発生した場合、アラートとともにインデックスアクションにリダイレクトします。
         redirect_to todos_path, alert: e.message
       end
     else
-      redirect_to todos_path, alert: 'Please upload a CSV file.'
+      # ファイルがアップロードされていない場合、アラートとともにインデックスアクションにリダイレクトします。
+      redirect_to todos_path, alert: 'CSVファイルをアップロードしてください。'
     end
   end
   
@@ -46,29 +54,33 @@ class TodosController < ApplicationController
   end
 end
 
+# TodoExporterサービスオブジェクトは、Todo項目のCSVデータ生成を処理します。
 class TodoExporter
-  def initialize(todos)
-    @todos = todos
-  end
-
-  def generate_csv
-    CSV.generate(headers: true) do |csv|
-      csv << ['ID', 'Title']
-      @todos.each do |todo|
-        csv << [todo.id, todo.title]
+    def initialize(todos)
+      @todos = todos
+    end
+  
+    # ヘッダー付きのCSV文字列を生成し、ファイルダウンロードに使用します。
+    def generate_csv
+      CSV.generate(headers: true) do |csv|
+        csv << ['ID', 'Title'] # CSVヘッダーを追加します。
+        @todos.each do |todo|
+          csv << [todo.id, todo.title] # 各TodoのデータをCSVに追加します。
+        end
       end
     end
   end
-end
-
-class TodoImporter
-  def initialize(file_path)
-    @file_path = file_path
-  end
-
-  def import_csv
-    CSV.foreach(@file_path, headers: true) do |row|
-      Todo.create!(title: row['Title'])
+  
+  # TodoImporterサービスオブジェクトは、CSVファイルからTodo項目のインポートを処理します。
+  class TodoImporter
+    def initialize(file_path)
+      @file_path = file_path
+    end
+  
+    # CSVファイルを読み取り、各行からTodo項目を作成します。
+    def import_csv
+      CSV.foreach(@file_path, headers: true) do |row|
+        Todo.create!(title: row['Title']) # エラーチェック付きでTodo項目を作成します。
+      end
     end
   end
-end
