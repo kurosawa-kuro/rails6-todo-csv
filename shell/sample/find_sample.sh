@@ -1,0 +1,1 @@
+find . -type f -name "*sample*" ! -path "./tmp/*" ! -path "./.git/*"
