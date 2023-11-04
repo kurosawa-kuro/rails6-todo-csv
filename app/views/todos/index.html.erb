@@ -1,5 +1,12 @@
 <h1>Todo List</h1>
 
+<%= link_to "Export as CSV", export_todos_path(format: :csv), class: "button" %>
+
+<%= form_tag(import_todos_path, multipart: true) do %>
+    <%= file_field_tag :file %>
+    <%= submit_tag "Import CSV" %>
+<% end %>
+
 <%= form_with model: Todo.new, local: true do |form| %>
   <p>
     <%= form.label :title %><br>
