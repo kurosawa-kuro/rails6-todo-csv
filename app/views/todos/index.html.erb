@@ -1,0 +1,19 @@
+<h1>Todo List</h1>
+
+<%= form_with model: Todo.new, local: true do |form| %>
+  <p>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+  </p>
+  <p>
+    <%= form.submit "Create Todo" %>
+  </p>
+<% end %>
+
+<ul>
+  <% @todos.each do |todo| %>
+    <li>
+      <%= link_to todo.title, todo_path(todo) %>
+    </li>
+  <% end %>
+</ul>
